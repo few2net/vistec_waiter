@@ -1,0 +1,10 @@
+std_msgs/Bool abort_command
+std_msgs/Bool home_command
+std_msgs/Bool serve_command
+std_msgs/Bool svm_trained
+std_msgs/Bool has_global
+geometry_msgs/Vector3 global_position
+std_msgs/Bool has_local
+geometry_msgs/Vector3 local_center
+geometry_msgs/Vector3 local_position 
+std_msgs/Bool arm_control

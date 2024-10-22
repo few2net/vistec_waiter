@@ -1,0 +1,92 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="static/assets/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+     crossorigin="anonymous">
+    <script src="static/assets/js/roslib.min.js"></script>
+    <script src="static/assets/js/vue.js"></script>
+    <script src="static/assets/js/eventemitter2.min.js"></script>
+
+
+    <link rel="stylesheet" href="static/assets/css/font-awesome.min.css"/>
+    <link rel="shortcut icon" href="#" />
+
+    <style>
+        .table1 {
+            width: 100%;
+            border: 3px solid black;
+            height: 480px;
+            text-align: center;
+          }
+        .btn {
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div class="row">
+            <div class="col-md-12 col-sm-6 text-center my-2">
+                <h3>Connection status</h3>
+                <p class="text-danger" v-if="!connected">Not connected!</p>
+                <p class="text-success" v-if="connected">Connected!</p>
+                <label>ROSBridge address</label>
+                <br>
+                <input type="text" v-model="rosbridge_address" />
+                <button :disabled="loading" class="btn btn-danger" @click="disconnect" v-if="connected">Disconnect!</button>
+                <button :disabled="loading" class="btn btn-success" @click="connect" v-else>Connect!</button>
+                <br>
+            </div>
+            <div class="col-md-12 col-sm-6" style="overflow:auto;">
+                <div class="row">
+                    <div class="col-md-12 text-center ">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons" style="float: left;">
+                            <label class="btn btn-secondary">
+                                <input @click="setGlobal" type="radio" name="options" id="option1" autocomplete="off" checked aria-pressed="false"> Global Camera
+                            </label>
+                            <label class="btn btn-secondary">
+                                <input @click="setLocal" type="radio" name="options" id="option2" autocomplete="off"> Robot Camera
+                            </label>
+                        </div>
+                        <br>
+                        <table class="table1">
+                            <tr>
+                                <th>
+                                    <div class="col-md-12 col-sm-6 text-center my-2">
+                                        <div id="divCamera"></div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 1st row -->
+                    <div class="col-md-12 text-left my-2">
+                        <table width=100%>
+                            <tr>
+                                <th width=50% >
+                                    <a href="training"><button class="btn btn-primary" style="font-size : 20px; width: 45%; height: 50px;">
+                                        <b>Train</b></button></a>
+                                    <button id="serve_btn" @click="serve" class="btn btn-primary" style="font-size : 20px; width: 45%; height: 50px;">
+                                        <b>Serve</b></button>
+                                </th>
+                                <th style="float: right;">
+                                    <button id="home_btn" @click="home" class="btn btn-primary"><i class="fa fa-home"></i>Home position</button>
+                                    <button id="abort_btn" @click="abort" class="btn btn-primary">Abort</button>
+                                </th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="static/mjpegcanvas.js"></script>
+    <script src="static/main.js"></script>
+</body>
+
+</html>

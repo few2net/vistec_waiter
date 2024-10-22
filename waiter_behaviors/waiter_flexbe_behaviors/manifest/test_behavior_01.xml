@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<behavior name="test behavior 01">
+
+	<executable package_path="waiter_flexbe_behaviors.test_behavior_01_sm" class="testbehavior01SM" />
+	<tagstring>demo</tagstring>
+	<author>Philipp Schillinger</author>
+	<date>Fri Aug 21 2015</date>
+	<description>
+		This is a simple example for a behavior.
+	</description>
+
+
+	<!-- Contained Behaviors -->
+
+	<!-- Available Parameters -->
+	<params>
+
+		<param type="text" name="prefix" default="/hook/camera" label="prefix" hint="Sets the prefix" />
+
+	</params>
+
+
+</behavior>

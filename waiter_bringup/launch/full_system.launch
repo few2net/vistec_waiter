@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- Noted: This file is just a guidline for running full system.
+            Please follow below instruction. -->
+
+<launch>
+    <!-- Run this launch file on the mobile robot, mir2@192.168.12.21 -->
+    <!-- include file="$(find waiter_bringup)/launch/mir2.launch"/-->
+
+    <!-- Run the global camera module (25/jan/22 tested on Tanyatep's PC)-->
+    <!-- include file="$(find waiter_bringup)/launch/global_cam.launch -->
+
+    <!-- For the future, additional global camera modules should be run below -->
+    <!-- include file="$(find waiter_bringup)/launch/global_cam_2.launch -->
+    <!-- include file="$(find waiter_bringup)/launch/global_cam_3.launch -->
+
+    <!-- Last, run this launch file on the server machine (25/jan/22 tested on Tanyatep's PC) -->
+    <!-- include file="$(find waiter_bringup)/launch/server.launch"/-->
+</launch>

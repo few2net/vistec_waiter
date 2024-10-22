@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="prefix" default="hook/camera"/>
+    <arg name="enable_ur" default="true"/>
+
+    <!--
+        Use "hook/camera" namespace to avoid recording from mir_auto_bagger.
+        If not, it will cause a problem with network traffic due to the realsense streaming.
+    -->
+    <group ns="$(arg prefix)">
+        <!--    realsense bringup -->
+        <node pkg="tf2_ros" type="static_transform_publisher" name="realsense_tf" args="0 -0.075 0 0 0 0 wrist_3_link local_cam_link"
+            if="$(arg enable_ur)"/>
+        <node pkg="tf2_ros" type="static_transform_publisher" name="realsense_tf" args="0 0 1.2 -1.57 0 -1.57 base_link local_cam_link"
+            unless="$(arg enable_ur)"/>
+
+        <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+            <arg name="camera" value="local_cam"/>
+            <arg name="publish_tf" value="true"/>
+            <!-- If you need a custom resolution, you need to specify 3 configs -->
+            <arg name="color_width" value="640"/>
+            <arg name="color_height" value="480"/>
+            <arg name="color_fps" value="30"/>
+            <arg name="depth_width" value="640"/>
+            <arg name="depth_height" value="480"/>
+            <arg name="depth_fps" value="30"/>
+            <arg name="align_depth" value="true"/>
+        </include>
+
+        <group ns="local_cam">
+            <!-- disable plugins that conflict with mir_auto_bagger-->
+            <rosparam param="color/image_raw/disable_pub_plugins">
+                - 'image_transport/compressedDepth'
+                - 'image_transport/theora'
+            </rosparam>
+            <rosparam param="depth/image_rect_raw/disable_pub_plugins">
+                - 'image_transport/compressedDepth'
+                - 'image_transport/theora'
+            </rosparam>
+
+            <!-- reduce compressed level for realtime process-->
+            <rosparam param="aligned_depth_to_color/image_raw/compressedDepth/png_level">4</rosparam>
+        </group>
+    </group>
+</launch>

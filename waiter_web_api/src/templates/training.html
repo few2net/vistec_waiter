@@ -1,0 +1,317 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="static/assets/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+     crossorigin="anonymous">
+    <script src="static/assets/js/roslib.min.js"></script>
+    <script src="static/assets/js/vue.js"></script>
+    <script src="static/assets/js/eventemitter2.min.js"></script>
+    <script src="static/assets/js/jquery-3.4.1.min.js"></script>
+    
+    <link rel="stylesheet" href="static/assets/css/font-awesome.min.css"/>
+    <link rel="shortcut icon" href="#" />
+
+    <style>
+        .table1 {
+            width: 100%;
+            border: 3px solid black;
+            height: 480px;
+            text-align: center;
+          }
+        .btn {
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .nopad {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+        .image-checkbox {
+            cursor: pointer;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            border: 4px solid transparent;
+            margin-bottom: 0;
+            outline: 0;
+        }
+        .image-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .image-checkbox img {
+            width: 100%;
+        }
+
+        .image-checkbox-checked {
+            border-color: #4783B0;
+        }
+        .image-checkbox .fa {
+            position: absolute;
+            color: #4A79A3;
+            background-color: #fff;
+            padding: 10px;
+            top: 0;
+            right: 0;
+        }
+        .image-checkbox-checked .fa {
+            display: block !important;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div class="row">
+            <div class="col-md-12 col-sm-6 text-center my-2">
+                <h3>Choose a target</h3>
+            </div>
+            <div class="col-md-12 col-sm-6" style="overflow:auto;">
+                <div class="row">
+                    <div class="col-md-12 text-center ">
+                        <br>
+                        <table class="table1">
+                            <tr>
+                                <th>
+                                    <div class="row justify-content-center">
+                                        <div class="col-xs-2 col-sm-3 col-md-3 nopad text-center">
+                                            <label class="image-checkbox image-checkbox-unchecked">
+                                                <img id="img1" class="img-responsive" src="static/assets/no-img.png" />
+                                                <input type="checkbox" name="image[]" value="" />
+                                                <i class="fa fa-check hidden"></i>
+                                            </label>
+                                        </div>
+                                        <div class="col-xs-2 col-sm-3 col-md-3 nopad text-center">
+                                            <label class="image-checkbox image-checkbox-unchecked">
+                                                <img id="img2" class="img-responsive" src="static/assets/no-img.png" />
+                                                <input type="checkbox" name="image[]" value="" />
+                                                <i class="fa fa-check hidden"></i>
+                                            </label>
+                                        </div>
+                                        <div class="col-xs-2 col-sm-3 col-md-3 nopad text-center">
+                                            <label class="image-checkbox image-checkbox-unchecked">
+                                                <img id="img3" class="img-responsive" src="static/assets/no-img.png" />
+                                                <input type="checkbox" name="image[]" value="" />
+                                                <i class="fa fa-check hidden"></i>
+                                            </label>
+                                        </div>
+                                        <div class="col-xs-2 col-sm-3 col-md-3 nopad text-center">
+                                            <label class="image-checkbox image-checkbox-unchecked">
+                                                <img id="img4" class="img-responsive" src="static/assets/no-img.png" />
+                                                <input type="checkbox" name="image[]" value="" />
+                                                <i class="fa fa-check hidden"></i>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- 1st row -->
+                    <div class="col-md-12 text-left my-2">
+                        <table width=100%>
+                            <tr>
+                                <th width=75% >
+                                        <button id="requestPhoto" class="btn btn-primary" style="font-size : 20px; width: 25%; height: 50px;">
+                                            <b>Request Photo</b></button>
+                                        <button id="submit" @click="submitService" :enabled="connected" class="btn btn-primary" style="font-size : 20px; width: 25%; height: 50px;">
+                                            <b>Submit</b></button>
+                                        <button id="newPerson" @click="submitService" class="btn btn-primary" style="font-size : 20px; width: 25%; height: 50px;">
+                                            <b>Change target</b></button>
+
+                                </th>
+                                <th style="float: right;">
+                                    <button id="clearMemory" @click="submitService" class="btn btn-primary"><i class="fa fa-close"></i>Clear memory</button>
+                                    <a href="/"><button class="btn btn-primary"><i class="fa fa-close"></i>Back</button></a>
+                                </th>
+                            </tr>
+                        </table>        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="static/mjpegcanvas.js"></script>
+    <script src="static/train.js"></script>
+
+    <!-- Request photo script-->
+    <script>
+        $("#requestPhoto").on("click", function () 
+        {
+            console.log("request photo")
+                    $(".image-checkbox").each(function () {
+                        if ($(this).find('input[type="checkbox"]')) {
+                            $(this).removeClass('image-checkbox-checked');
+                            $(this).addClass('image-checkbox-unchecked');
+                        }
+                    });
+
+                    $.ajax({
+                        url: "/requestPhoto",
+                        type: "get",
+                        success: function( result ) {
+                            var parsedImgPath = JSON.parse(result);
+
+                            // console.log("result")
+                            // console.log(parsedImgPath)
+
+                            $( "#img1" ).attr("src", "static/assets/image-capture/" + parsedImgPath[0]);
+                            $( "#img2" ).attr("src", "static/assets/image-capture/" + parsedImgPath[1]);
+                            $( "#img3" ).attr("src", "static/assets/image-capture/" + parsedImgPath[2]);
+                            $( "#img4" ).attr("src", "static/assets/image-capture/" + parsedImgPath[3]);
+
+                            $("#img1").attr("data", parsedImgPath[0]);
+                            $("#img2").attr("data", parsedImgPath[1]);
+                            $("#img3").attr("data", parsedImgPath[2]);
+                            $("#img4").attr("data", parsedImgPath[3]);
+                        }
+                    });
+            });
+    </script>
+
+    <!-- Image checkbox script-->
+    <script>
+        $(".image-checkbox").on("click", function (e) {
+        $(this).toggleClass('image-checkbox-checked');
+        var $checkbox = $(this).find('input[type="checkbox"]');
+        $checkbox.prop("checked",!$checkbox.prop("checked"))
+        $(this).toggleClass('image-checkbox-unchecked');
+        e.preventDefault();
+        });
+
+
+        $(".image-checkbox").change("change", function (e) {
+            console.log(init_state);
+            init_state = init_state + 1;
+            e.preventDefault();
+            if (init_state == 1){
+            };
+        });
+    </script>
+
+    <!-- Submit script-->
+    <script>
+        $("#submit").on("click", function () {
+
+            var img_unchecked = [];
+            var img_checked = [];
+            var img = [];
+            var data = [];
+
+            $(".image-checkbox-checked").each(function () {
+                img_checked.push($(this).find('img').attr("data"));
+                // img.push({x : $(this).find('img').attr("data"), y : 1} )
+            });
+
+            console.log(img_checked);
+            console.log(JSON.stringify("checked: " + img_checked));
+
+            for(i in img_checked) {
+                console.log(img_checked[i].slice(4, -4));
+                data.push({x: img_checked[i].slice(4, -4), y:1});
+            }
+
+            $(".image-checkbox-unchecked").each(function () {
+                img_unchecked.push($(this).find('img').attr("data"));
+                // img.push({x : $(this).find('img').attr("data"), y : 0} )
+            });
+
+            console.log(img_unchecked);
+            console.log(JSON.stringify("unchecked: " + img_unchecked));
+
+            for(i in img_unchecked) {
+                console.log(img_unchecked[i].slice(4, -4));
+                data.push({x: img_unchecked[i].slice(4, -4), y:0});
+            }
+
+            console.log("data: ", data);
+
+            $.ajax({
+                url: "/saveLabel?" + "data=" + JSON.stringify(data),
+                type: "get",
+                success: function( result ) {
+                    alert("Successfully saved!");
+                    $(".image-checkbox").each(function () {
+                        if ($(this).find('input[type="checkbox"]')) {
+                            $(this).removeClass('image-checkbox-checked');
+                            $(this).addClass('image-checkbox-unchecked');
+                        }
+                    });
+
+                    $.ajax({
+                        url: "/requestPhoto",
+                        type: "get",
+                        success: function( result ) {
+                            var parsedImgPath = JSON.parse(result);
+
+                            // console.log(result)
+                            // console.log(parsedImgPath)
+
+                            $( "#img1" ).attr("src", "static/assets/image-capture/" + parsedImgPath[0]);
+                            $( "#img2" ).attr("src", "static/assets/image-capture/" + parsedImgPath[1]);
+                            $( "#img3" ).attr("src", "static/assets/image-capture/" + parsedImgPath[2]);
+                            $( "#img4" ).attr("src", "static/assets/image-capture/" + parsedImgPath[3]);
+
+                            $("#img1").attr("data", parsedImgPath[0]);
+                            $("#img2").attr("data", parsedImgPath[1]);
+                            $("#img3").attr("data", parsedImgPath[2]);
+                            $("#img4").attr("data", parsedImgPath[3]);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $("#newPerson").on("click", function() {
+            $(".image-checkbox").each(function () {
+                if ($(this).find('input[type="checkbox"]')) {
+                    $(this).removeClass('image-checkbox-checked');
+                    $(this).addClass('image-checkbox-unchecked');
+                }
+                $(".img-responsive").attr("src", "static/assets/no-img.png");
+            });
+
+            $.ajax({
+                url: "/resetSVM",
+                type: "get",
+                success: function( result ) {
+                    console.log('reset svm')
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $("#clearMemory").on("click", function() {
+            $(".image-checkbox").each(function () {
+            if ($(this).find('input[type="checkbox"]')) {
+                $(this).removeClass('image-checkbox-checked');
+                $(this).addClass('image-checkbox-unchecked');
+                }
+                $(".img-responsive").attr("src", "static/assets/no-img.png");
+            });
+
+            $.ajax({
+                url: "/clearMemory",
+                type: "get",
+                success: function( result ) {
+                    console.log('clear memory')
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

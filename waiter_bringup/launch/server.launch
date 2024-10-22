@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="prefix" default="/hook/camera"/>
+    <arg name="save_global" default="true"/>
+    <arg name="save_local" default="true"/>
+    <!--
+        Use "hook/camera" namespace to avoid recording from mir_auto_bagger.
+        If not, it will cause a problem with network traffic due to the realsense streaming.
+    -->
+    <group ns="$(arg prefix)">
+        <!-- Global tracking -->
+        <rosparam command="load" file="$(find waiter_calibration)/config/extrinsic.yaml" ns="extrinsic"/>
+        <node name="global_tracking_node" pkg="waiter_global_tracking" type="global_tracking_node.py" output="screen">
+            <param name="prefix" value="$(arg prefix)"/>
+            <param name="update_interval" value="2"/>
+        </node>
+
+        <!-- Robot memory-->
+        <node name="robot_memory" pkg="waiter_web_api" type="robot_memory.py" output="screen">
+            <param name="prefix" value="$(arg prefix)"/>
+            <param name="save_global" value="$(arg save_global)"/>
+            <param name="save_local" value="$(arg save_local)"/>
+        </node>
+
+        <!-- stream camera 0.0.0.0:8080 -->
+        <node name="web_video_server" pkg="web_video_server" type="web_video_server">
+            <param name="port" value="8080"/>
+        </node>
+
+        <!-- rosbridge 0.0.0.0:9090 -->
+        <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+            <param name="unregister_timeout" value="3600"/>
+        </include>
+
+        <!-- Web interface-->
+        <!-- Noted!! there is bug when using firefox (with Mir ROS_MASTER_URI). So, please use chromium instead -->
+        <node name="web_server" pkg="waiter_web_api" type="api.py" output="screen"/>
+    </group>
+</launch>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!-- Don't forget to run sim_clock_node before run this calibration -->
+<launch>
+    <arg name="video_device" default="0"/>
+    <include file="$(find waiter_bringup)/launch/global_cam.launch">
+      <arg name="video_device" value="$(arg video_device)"/>
+    </include>
+
+    <node name="tag_br" pkg="tf2_ros" type="static_transform_publisher" args="0 0 0.86 -1.57 0 0 base_link tag_0"/>
+
+    <!--
+        Use "hook/camera" namespace to avoid recording from mir_auto_bagger.
+        If not, it will cause a problem with network traffic due to the realsense streaming.
+    -->
+    <group ns="hook/camera">      
+        <!-- Set parameters -->
+        <rosparam command="load" file="$(find waiter_calibration)/config/settings.yaml" ns="apriltag_ros_continuous_node"/>
+        <rosparam command="load" file="$(find waiter_calibration)/config/tags.yaml" ns="apriltag_ros_continuous_node"/>
+
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_ros_continuous_node" clear_params="true" output="screen">
+            <!--Remap topics from those used in code to those on the ROS network -->
+            <remap from="image_rect" to="/hook/camera/global_cam/image_raw" />
+            <remap from="camera_info" to="/hook/camera/global_cam/camera_info" />
+            <param name="camera_frame" type="str" value="global_cam" />
+            <param name="publish_tag_detections_image" type="bool" value="true" />
+        </node>
+
+        <node name="image_view" pkg="image_view" type="image_view" respawn="false">
+            <param name="autosize" value="true"/>
+            <remap from="image" to="/hook/camera/tag_detections_image"/>
+        </node>
+
+        <node pkg="waiter_calibration" type="ext_calibration.py" name="ext_calibration_node" output="screen" required="true">
+            <param name="prefix" value="/hook/camera"/>
+        </node>
+    </group>
+</launch>

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="prefix" default="hook/camera"/>
+    <arg name="enable_ur" default="true"/>
+    <arg name="enable_cam" default="true"/>
+
+    <!-- Due to the Mir's clock problem, I use simulation time instead
+        which is publised by Mir2 computer synced to the Mir computer. -->
+    <node pkg="waiter_bringup" type="sim_clock_node.py" name="sim_clock_node"/>
+
+    <!-- Run the UR3e arm, I'll use joint_group_vel_controller for visual servoing -->
+    <include file="$(find ur_robot_driver)/launch/ur3e_bringup.launch" if="$(arg enable_ur)">
+        <arg name="robot_ip" value="192.168.12.60"/>
+        <arg name="controllers" value="joint_state_controller scaled_pos_joint_traj_controller speed_scaling_state_controller force_torque_sensor_controller"/>
+        <arg name="stopped_controllers" value="joint_group_vel_controller twist_controller"/>
+    </include>
+
+    <!-- Run the robot camera -->
+    <include file="$(find waiter_bringup)/launch/local_cam.launch" if="$(arg enable_cam)">
+        <arg name="prefix" value="$(arg prefix)"/>
+        <arg name="enable_ur" value="$(arg enable_ur)"/>
+    </include>
+
+    <!-- Run local tracking node-->
+    <node name="local_tracking_node" pkg="waiter_local_tracking" type="local_tracking_node.py" if="$(arg enable_cam)" output="screen">
+        <param name="prefix" value="$(arg prefix)"/>
+        <param name="update_interval" value="2"/>
+    </node>
+
+    <!-- Run system watchdog node -->
+    <node name="system_watchdog_node" pkg="waiter_bringup" type="system_watchdog.py">
+        <param name="prefix" value="$(arg prefix)"/>
+    </node>
+
+    <!-- Run visual servoing node -->
+    <node name="arm_control_node" pkg="waiter_local_tracking" type="arm_control_v3.py" if="$(arg enable_ur)" output="screen">
+        <param name="prefix" value="$(arg prefix)"/>
+    </node>
+
+    <!-- Run IR module -->
+    <node name="IR_module_node" pkg="rosserial_python" type="serial_node.py"/>
+</launch>
